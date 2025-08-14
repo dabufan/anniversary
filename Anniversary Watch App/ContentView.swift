@@ -1,24 +1,54 @@
-//
-//  ContentView.swift
-//  Anniversary Watch App
-//
-//  Created by Q Lee on 2025/8/14.
-//
-
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var anniversaries: [Anniversary]
+
+    @State private var isAddingNewAnniversary = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationView {
+            List {
+                ForEach(anniversaries) { anniversary in
+                    NavigationLink(destination: AnniversaryDetailView(anniversary: anniversary)) {
+                        HStack {
+                            Image(systemName: anniversary.category.iconName)
+                                .foregroundColor(.accentColor)
+                            Text(anniversary.title)
+                        }
+                    }
+                }
+                .onDelete(perform: deleteAnniversaries)
+            }
+            .navigationTitle("Anniversaries")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        isAddingNewAnniversary = true
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isAddingNewAnniversary) {
+                AddAnniversaryView(isPresented: $isAddingNewAnniversary)
+            }
         }
-        .padding()
+    }
+
+    private func deleteAnniversaries(at offsets: IndexSet) {
+        for offset in offsets {
+            let anniversary = anniversaries[offset]
+            NotificationManager.shared.cancelNotification(for: anniversary)
+            modelContext.delete(anniversary)
+        }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .modelContainer(for: Anniversary.self, inMemory: true)
+    }
 }

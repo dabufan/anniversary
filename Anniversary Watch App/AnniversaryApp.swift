@@ -1,17 +1,15 @@
-//
-//  AnniversaryApp.swift
-//  Anniversary Watch App
-//
-//  Created by Q Lee on 2025/8/14.
-//
-
 import SwiftUI
+import SwiftData
 
 @main
 struct Anniversary_Watch_AppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    NotificationManager.shared.requestAuthorization()
+                }
         }
+        .modelContainer(for: Anniversary.self)
     }
 }
